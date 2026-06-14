@@ -11,8 +11,13 @@ const header = () => {
           <Link to="/">
             <img src="https://raw.githubusercontent.com/DevJuanP/proyecto_CIBERTEC/refs/heads/main/img/logo.webp" alt="logo" />
           </Link>
-          <a href="../index.html">
-          </a>
+        </div>
+
+        <div className="Login-container">
+          <Link to="/login" className="login-link">
+            <span className="login-icon">👤</span>
+            <span>Iniciar sesión</span>
+          </Link>
         </div>
       </div>
 
