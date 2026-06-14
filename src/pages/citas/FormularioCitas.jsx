@@ -124,47 +124,37 @@ const FormularioCitas = () => {
         <button className="btn-pdf" onClick={generarPDF}>Generar PDF</button>
         <div className="reporte-wrapper" style={{ marginTop: "1rem" }}>
           <table className="tabla-citas" style={{ width: "100%" }}>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>ID cliente</th>
-                <th>Cliente</th>
-                <th>DNI</th>
-                <th>telf Cliente</th>
-                <th>Correo</th>
-                <th>ID Asesor</th>
-                <th>Asesor</th>
-                <th>telf. Asesor</th>
-                <th>Fecha de solicitud</th>
-                <th>Fecha de atención</th>
-                <th>Tipo de cita</th>
-                <th>Estado</th>
-                <th>Descripción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {citas.map((c, idx) => {
-                const asesor = asesores.find((a) => a.id === Number(c.asesorId));
-                return (
-                  <tr key={c.id || idx}>
-                    <td>{idx + 1}</td>
-                    <td>{c.nroCliente}</td>
-                    <td>{c.nombreCliente}</td>
-                    <td>{c.dni}</td>
-                    <td>{c.telefono}</td>
-                    <td>{c.correo}</td>
-                    <td>{c.asesorId}</td>
-                    <td>{asesor ? asesor.nombre : ""}</td>
-                    <td>{c.asesorTelefono || ""}</td>
-                    <td>{formatDate(c.fechaSolicitud)}</td>
-                    <td>{formatDate(c.fechaAtencion)}</td>
-                    <td>{c.tipoCita}</td>
-                    <td>{c.estado}</td>
-                    <td>{c.descripcion}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
+          <thead>
+  <tr>
+    <th>Cliente</th>
+    <th>DNI</th>
+    <th>Teléfono</th>
+    <th>Correo</th>
+    <th>Asesor</th>
+    <th>Fecha de atención</th>
+    <th>Tipo de cita</th>
+    <th>Descripción</th>
+  </tr>
+</thead>
+
+<tbody>
+  {citas.map((c) => {
+    const asesor = asesores.find((a) => a.id === Number(c.asesorId));
+
+    return (
+      <tr key={c.id}>
+        <td>{c.nombreCliente}</td>
+        <td>{c.dni}</td>
+        <td>{c.telefono}</td>
+        <td>{c.correo}</td>
+        <td>{asesor ? asesor.nombre : ""}</td>
+        <td>{formatDate(c.fechaAtencion)}</td>
+        <td>{c.tipoCita}</td>
+        <td>{c.descripcion}</td>
+      </tr>
+    );
+  })}
+</tbody>
           </table>
         </div>
       </div>
