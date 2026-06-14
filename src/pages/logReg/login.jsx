@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import  "./loginRegister.css";
+import { useNavigate } from "react-router-dom";
+import "./loginRegister.css";
 
 function Login() {
+  const navigate = useNavigate();
   const [datos, setDatos] = useState({
     correo: "",
     password: "",
@@ -17,6 +19,11 @@ function Login() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(datos);
+  };
+
+  const handleRegister = () => {
+    console.log("Ir a registro");
+    navigate("/register");
   };
 
   return (
@@ -46,8 +53,18 @@ function Login() {
           <button type="submit" className="auth-btn">
             Ingresar
           </button>
+
+          
+          <button
+            type="button"
+            className="auth-btn auth-btn-secondary"
+            onClick={handleRegister}
+          >
+            ¿No tienes cuenta? Regístrate
+          </button>
         </form>
-         <div className="video-container">
+
+        <div className="video-container">
           <iframe
             width="100%"
             height="250"
