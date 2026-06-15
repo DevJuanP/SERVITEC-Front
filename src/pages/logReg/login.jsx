@@ -99,15 +99,7 @@ function Login() {
         </form>
 
         <div className="video-container">
-          <iframe
-            width="100%"
-            height="250"
-            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-            title="Video informativo"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
+          <iframe width="500" height="315" src="https://www.youtube.com/embed/Jqs5EaAaueA?si=krxdJZYfXsB3ykdQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
         </div>
       </div>
     </div>
