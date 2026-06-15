@@ -1,8 +1,19 @@
 import React from 'react'
 import './header.css'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 
-const header = () => {
+const Header = () => {
+  const navigate = useNavigate()
+  const token = localStorage.getItem('token')
+  const nombreUsuario = localStorage.getItem('nombreUsuario') || localStorage.getItem('authUserName')
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('nombreUsuario')
+    localStorage.removeItem('authUserName')
+    navigate('/login')
+  }
+
   return (
     <>
        <header>
@@ -14,10 +25,22 @@ const header = () => {
         </div>
 
         <div className="Login-container">
-          <Link to="/login" className="login-link">
-            <span className="login-icon">👤</span>
-            <span>Iniciar sesión</span>
-          </Link>
+          {token ? (
+            <div className="login-link login-user">
+              <span className="login-icon">👤</span>
+              <div className="login-user-info">
+                <span>{nombreUsuario || 'Usuario'}</span>
+                <button type="button" className="logout-btn" onClick={handleLogout}>
+                  Cerrar sesión
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Link to="/login" className="login-link">
+              <span className="login-icon">👤</span>
+              <span>Iniciar sesión</span>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -125,4 +148,4 @@ const header = () => {
   )
 }
 
-export default header
+export default Header

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./loginRegister.css";
 
 function Login() {
@@ -16,14 +17,48 @@ function Login() {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(datos);
+  const handleRegister = () => {
+    navigate("/register");
   };
 
-  const handleRegister = () => {
-    console.log("Ir a registro");
-    navigate("/register");
+  const iniciarSesion = async (corr, pass) => {
+    const result = await axios.post("http://localhost:3000/api/auth/login", {
+      correo: corr,
+      password: pass,
+    });
+
+    return result.data;
+  };
+
+  const handleLoginClick = async (e) => {
+    e.preventDefault();
+    try {
+      const responseApi = await iniciarSesion(datos.correo, datos.password);
+
+      if (responseApi.token) {
+        localStorage.setItem("token", responseApi.token);
+      }
+
+      if (responseApi.usuario?.nombre) {
+        localStorage.setItem("nombreUsuario", responseApi.usuario.nombre);
+      }
+
+      if (responseApi.token || responseApi.mensaje === "Login exitoso" ) {
+        alert(responseApi.mensaje || "Login exitoso");
+        setDatos({
+          correo: "",
+          password: "",
+        });
+        navigate("/");
+      } else {
+        alert(responseApi.error || "No se pudo iniciar sesión");
+      }
+    } catch (error) {
+      console.log({
+        error: error.message,
+      });
+      alert("Error al iniciar sesión");
+    }
   };
 
   return (
@@ -31,7 +66,7 @@ function Login() {
       <div className="auth-card">
         <h2 className="auth-title">Iniciar Sesión</h2>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleLoginClick}>
           <input
             type="email"
             name="correo"
@@ -54,7 +89,6 @@ function Login() {
             Ingresar
           </button>
 
-          
           <button
             type="button"
             className="auth-btn auth-btn-secondary"

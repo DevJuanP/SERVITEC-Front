@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "axios": "^1.13.6",
+    "axios": "^1.18.0",
     "jspdf": "^4.2.0",
     "react": "^19.1.1",
     "react-chatbot-kit": "^2.2.2",

@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import  "./loginRegister.css";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import "./loginRegister.css";
 
 function Register() {
+  const navigate = useNavigate();
   const [usuario, setUsuario] = useState({
     nombre: "",
     correo: "",
@@ -15,18 +18,44 @@ function Register() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const registrarUsuario = async (nom, corr, pass) => {
+    const result = await axios.post("http://localhost:3000/api/auth/register", {
+      nombre: nom,
+      correo: corr,
+      password: pass,
+      rol: "cliente",
+    });
+
+    return result.data;
+  };
+
+  const handleRegisterClick = async (e) => {
     e.preventDefault();
 
-    console.log("Registro:", usuario);
+    try {
+      const responseApi = await registrarUsuario(
+        usuario.nombre,
+        usuario.correo,
+        usuario.password
+      );
 
-    alert("Usuario registrado correctamente");
-
-    setUsuario({
-      nombre: "",
-      correo: "",
-      password: "",
-    });
+      if (responseApi.mensaje === "Usuario registrado con éxito") {
+        alert("AHORA PUEDES INICIAR SESION :)");
+        setUsuario({
+          nombre: "",
+          correo: "",
+          password: "",
+        });
+        navigate("/login");
+      } else {
+        alert(responseApi.mensaje || "No se pudo registrar el usuario");
+      }
+    } catch (error) {
+      console.log({
+        error: error.message,
+      });
+      alert("Error al registrar usuario");
+    }
   };
 
   return (
@@ -34,7 +63,7 @@ function Register() {
       <div className="auth-card">
         <h2 className="auth-title">Registro de Usuario</h2>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleRegisterClick}>
           <input
             type="text"
             name="nombre"
