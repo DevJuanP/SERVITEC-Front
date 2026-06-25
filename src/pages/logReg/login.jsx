@@ -43,6 +43,10 @@ function Login() {
         localStorage.setItem("nombreUsuario", responseApi.usuario.nombre);
       }
 
+      if (responseApi.usuario?.rol) {
+        localStorage.setItem("rolUsuario", responseApi.usuario.rol);
+      }
+
       if (responseApi.token || responseApi.mensaje === "Login exitoso" ) {
         alert(responseApi.mensaje || "Login exitoso");
         setDatos({

@@ -6,11 +6,13 @@ const Header = () => {
   const navigate = useNavigate()
   const token = localStorage.getItem('token')
   const nombreUsuario = localStorage.getItem('nombreUsuario') || localStorage.getItem('authUserName')
+  const rolUsuario = localStorage.getItem('rolUsuario')
 
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('nombreUsuario')
     localStorage.removeItem('authUserName')
+    localStorage.removeItem('rolUsuario')
     navigate('/login')
   }
 
@@ -137,7 +139,15 @@ const Header = () => {
             <li className="main-items">
               <Link to="/citas">CITAS</Link>
             </li>
-            
+
+            {rolUsuario === 'admin' && (
+              <>
+                <h2>•</h2>
+                <li className="main-items">
+                  <Link to="/admin">ADMIN</Link>
+                </li>
+              </>
+            )}
 
           </ul>
       
