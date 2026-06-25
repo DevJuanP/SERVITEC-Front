@@ -1,19 +1,20 @@
 import axios from "axios";
 
-export  async function getProducts() {
+export async function getProducts() {
   //const response = await axios.get("http://localhost:8080/api/productos");
-  const response = await axios.get("./../public/productos.json");
-  const products = await response.data.productos;
+  const response = await axios.get("http://localhost:3000/api/productos");
+  console.log("response: ", response);
+  const products = await response.data;
   return products;
 }
 
-export const getByCategory = (category, productos) =>{
+export const getByCategory = (category, productos) => {
   return productos.filter(p => {
-    let cat = p.categoria.name+"_"+p.categoria.Subcategoria
-    console.log("cat: ",cat)
+    let cat = p.categoria.name + "_" + p.categoria.Subcategoria
+    console.log("cat: ", cat)
     return cat.trim() == category.trim();
   })
-} 
+}
 
 export const getTitleCategory = (category) => {
   switch (category) {
