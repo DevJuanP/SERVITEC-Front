@@ -16,6 +16,7 @@ const Productos = () => {
     getProducts().then(data => {
       console.log("productos: ",data);
       let p = getByCategory(categoria, data)
+      console.log("productos filtrados: ",p)
       setProductos(p);
     })
     return () => {
