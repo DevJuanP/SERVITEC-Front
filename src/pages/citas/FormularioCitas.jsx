@@ -1,143 +1,34 @@
 import React, { useState, useEffect } from "react";
 import "./citas.css";
-import { asesores } from "./asesores";
-import { citasData } from "./citasData";
 import jsPDF from "jspdf";
+import axios from "axios";
 
 const FormularioCitas = () => {
   const today = new Date().toISOString().slice(0, 10);
 
-  const getStoredNombre = () => {
-    try {
-      const keys = ["nombreUsuario", "authUserName", "user", "usuario", "usuarioNombre", "userName"];
-      for (let k of keys) {
-        const raw = localStorage.getItem(k);
-        if (!raw) continue;
-        try {
-          const parsed = JSON.parse(raw);
-          const name = (parsed && (parsed.name || parsed.nombre)) || "";
-          if (name) return name;
-        } catch (e) {
-          // raw not JSON
-          return raw;
-        }
-      }
-    } catch (err) {
-      return "";
-    }
-    return "";
-  };
-
-  const getStoredUserId = () => {
-    try {
-      const keys = ["user", "usuario", "userId", "idUsuario"];
-      for (let k of keys) {
-        const raw = localStorage.getItem(k);
-        if (!raw) continue;
-        try {
-          const parsed = JSON.parse(raw);
-          const id = (parsed && (parsed.id || parsed._id || parsed.userId)) || "";
-          if (id) return id;
-        } catch (e) {
-          // raw not JSON, might be an id string
-          return raw;
-        }
-      }
-    } catch (err) {
-      return null;
-    }
-    return null;
-  };
-
-  const getStoredEmail = () => {
-    try {
-      const keys = ["correo", "email", "userEmail", "correoUsuario", "authEmail", "usuario"];
-      for (let k of keys) {
-        const raw = localStorage.getItem(k);
-        if (!raw) continue;
-        try {
-          const parsed = JSON.parse(raw);
-          const email = (parsed && (parsed.email || parsed.correo || parsed.usuario || parsed.mail)) || "";
-          if (email) return email;
-          // if parsed itself may be a user object with 'nombre' and 'correo'
-          if (parsed && typeof parsed === 'object') {
-            if (parsed.correo) return parsed.correo;
-            if (parsed.email) return parsed.email;
-          }
-        } catch (e) {
-          // raw not JSON, might be the email string
-          return raw;
-        }
-      }
-    } catch (err) {
-      return "";
-    }
-    return "";
-  };
-
   const [cita, setCita] = useState({
-    nombreCliente: "",
-    correo: "",
-    dni: "",
-    telefono: "",
     asesorId: "",
     tipoCita: "",
-    fechaSolicitud: today,
     fechaAtencion: "",
     estado: "Pendiente",
     descripcion: ""
   });
 
-  const [citas, setCitas] = useState(citasData);
+  const [citas, setCitas] = useState();
+  const [userData, setUserData] = useState(null);
+  const [asesores, setAsesores] = useState([]);
+  const [tiposCitas, setTiposCitas] = useState([]);
 
   useEffect(() => {
-    // inicializar desde arreglo predefinido
-    setCitas(citasData);
-  }, []);
-
-  useEffect(() => {
-    const nombre = getStoredNombre();
-    const userId = getStoredUserId();
-    const token = localStorage.getItem("token");
-    const email = getStoredEmail();
-    if (nombre) setCita((prev) => ({ ...prev, nombreCliente: nombre }));
-    // solo establecer correo si hay sesión (token) o hay nombre de usuario
-    if (token || nombre) {
-      if (email) setCita((prev) => ({ ...prev, correo: email }));
-    }
-
-    // cargar citas del usuario desde API (preparado para MongoDB)
-    const cargar = async () => {
+    const cargarDatosIniciales = async () => {
       try {
-        // Preferir buscar por userId si existe, si no usar nombre
-        let url = null;
-        if (userId) {
-          url = `/api/citas?userId=${encodeURIComponent(userId)}`;
-        } else if (nombre) {
-          url = `/api/citas?nombre=${encodeURIComponent(nombre)}`;
-        }
-
-        if (url && (token || nombre)) {
-          const res = await fetch(url);
-          if (res.ok) {
-            const data = await res.json();
-            setCitas(data);
-            return;
-          }
-        }
-      } catch (err) {
-        // si falla la llamada a la API, continuamos con el fallback
-      }
-
-      // fallback: filtrar `citasData` local para sólo mostrar las citas del usuario
-      if (nombre) {
-        setCitas(citasData.filter((c) => c.nombreCliente === nombre));
-      } else {
-        setCitas(citasData);
+        await Promise.all([obtenerMiInfo(), obtenerAsesores(), obtenerTiposCitas()]);
+      } catch (error) {
+        console.error("Error al cargar datos iniciales:", error);
       }
     };
 
-    cargar();
+    cargarDatosIniciales();
   }, []);
 
   const handleChange = (e) => {
@@ -145,29 +36,36 @@ const FormularioCitas = () => {
     setCita({ ...cita, [name]: value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const userId = getStoredUserId();
-    const nuevo = { ...cita, id: Date.now(), userId: userId || null };
-    // si hubiera backend, aquí haríamos POST; por ahora añadimos directamente
-    setCitas((prev) => [...prev, nuevo]);
-    citasData.push(nuevo); // mantener sincronizado el arreglo precargado
-    alert("Cita registrada correctamente ");
-    const nombreAfter = getStoredNombre();
-    const correoAfter = getStoredEmail();
-    const tokenAfter = localStorage.getItem("token");
-    setCita({
-      nombreCliente: nombreAfter || "",
-      correo: (tokenAfter || nombreAfter) ? (correoAfter || "") : "",
-      dni: "",
-      telefono: "",
-      asesorId: "",
-      tipoCita: "",
-      fechaSolicitud: today,
-      fechaAtencion: "",
-      estado: "Pendiente",
-      descripcion: ""
+  const agregarCita = async (token, asesorId, tipoCitaId, fechaCita, descripcion) => {
+    const payload = {
+      asesorId,
+      tipoCitaId: Number(tipoCitaId) || tipoCitaId,
+      fechaCita: fechaCita instanceof Date ? fechaCita.toISOString() : new Date(fechaCita).toISOString(),
+    };
+
+    payload.descripcion = descripcion || "";
+    console.log('Payload para agregar cita:', payload);
+
+    const result = await axios.post('http://localhost:3000/api/cita/agregarCita', payload, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     });
+
+    return result.data;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const fechaCita = cita.fechaAtencion;
+      const data = await agregarCita(token, cita.asesorId, cita.tipoCita, fechaCita, cita.descripcion);
+      console.log('Cita agregada:', data);
+      // Aquí puedes actualizar la lista de citas si es necesario
+    } catch (error) {
+      console.log('Error al agregar la cita:', error);
+    }
   };
 
   // formatea YYYY-MM-DD or Date into dd/mm/yyyy
@@ -197,9 +95,61 @@ const FormularioCitas = () => {
   };
 
   const cancelarCita = (id) => {
-    setCitas((prev) => prev.map((c) => (c.id === id ? { ...c, estado: "Cancelada" } : c)));
-    // aquí se puede añadir llamada a una API para persistir el cambio en MongoDB
+
   };
+
+
+
+  const obtenerMiInfo = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const result = await axios.get('http://localhost:3000/api/user/myInfo', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setUserData(result.data.usuario);
+      console.log('obtenerMiInfo result:', result.data.usuario);
+      return result.data.usuario;
+    } catch (error) {
+      console.log('Error en obtenerMiInfo:', error);
+      throw error;
+    }
+  };
+
+  const obtenerAsesores = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const result = await axios.get('http://localhost:3000/api/user/asesores', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setAsesores(result.data.asesores);
+      console.log('obtenerAsesores result:', result.data.asesores);
+      return result.data.asesores;
+    } catch (error) {
+      console.log('Error en obtenerAsesores:', error);
+      throw error;
+    }
+  };
+
+  const obtenerTiposCitas = async () => {
+    try {
+      const result = await axios.get('http://localhost:3000/api/cita/tipoCita');
+      setTiposCitas(result.data.tiposCitas);
+      console.log('obtenerTiposCitas result:', result.data.tiposCitas);
+      return result.data.tiposCitas;
+    } catch (error) {
+      console.log('Error en obtenerTiposCitas:', error);
+      throw error;
+    }
+  };
+
+
+
+
 
   return (
     <div className="contenedorcc" style={{ display: "flex", gap: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
@@ -207,22 +157,21 @@ const FormularioCitas = () => {
         <h2 className="titulo-cc">Registro de Citas</h2>
 
         <form onSubmit={handleSubmit} className="formulario-cc">
-          <input type="text" name="nombreCliente" placeholder="Nombre del Cliente" value={cita.nombreCliente} onChange={handleChange} required disabled />
-          <input type="email" name="correo" placeholder="Correo electrónico" value={cita.correo} onChange={handleChange} required disabled />
-          <input type="text" name="dni" placeholder="DNI" value={cita.dni} onChange={handleChange} maxLength="8" required />
-          <input type="tel" name="telefono" placeholder="Número de Teléfono" value={cita.telefono} onChange={handleChange} required />
+          <input type="text" name="nombreCliente" placeholder="Nombre del Cliente" value={userData?.nombre} required disabled />
+          <input type="email" name="correo" placeholder="Correo electrónico" value={userData?.correo} required disabled />
 
           <select name="asesorId" value={cita.asesorId} onChange={handleChange} required>
             <option value="">Seleccione asesor</option>
             {asesores.map((a) => (
-              <option key={a.id} value={a.id}>{a.nombre}</option>
+              <option key={a._id} value={a._id}>{a.nombre}</option>
             ))}
           </select>
 
           <select name="tipoCita" value={cita.tipoCita} onChange={handleChange} required>
             <option value="">Seleccione tipo de cita</option>
-            <option value="Presencial">Presencial</option>
-            <option value="Virtual">Virtual</option>
+            {tiposCitas.map(t => (
+              <option key={t._id} value={t._id}>{t.type}</option>
+            ))}
           </select>
 
           {/* El estado se asigna automáticamente al crear la cita (Pendiente) */}
@@ -230,8 +179,8 @@ const FormularioCitas = () => {
           <textarea name="descripcion" placeholder="Descripción (opcional)" value={cita.descripcion} onChange={handleChange} rows={3} />
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 12, color: '#333' }}>Fecha de solicitud</label>
-            <input type="date" name="fechaSolicitud" value={cita.fechaSolicitud} onChange={handleChange} style={{ padding: '8px', borderRadius: 6, border: '1px solid #ccc' }} required />
+            <label style={{ fontSize: 12, color: '#333' }}>Fecha de atención:</label>
+            <input type="date" name="fechaAtencion" value={cita.fechaAtencion} onChange={handleChange} style={{ padding: '8px', borderRadius: 6, border: '1px solid #ccc' }} required />
           </div>
 
           <button type="submit">Registrar Cita</button>
@@ -246,8 +195,6 @@ const FormularioCitas = () => {
             <thead>
               <tr>
                 <th>Cliente</th>
-                <th>DNI</th>
-                <th>Teléfono</th>
                 <th>Correo</th>
                 <th>Asesor</th>
                 <th>Fecha de atención</th>
@@ -258,7 +205,7 @@ const FormularioCitas = () => {
               </tr>
             </thead>
 
-            <tbody>
+            {/* <tbody>
               {citas.map((c) => {
                 const asesor = asesores.find((a) => a.id === Number(c.asesorId));
 
@@ -281,7 +228,7 @@ const FormularioCitas = () => {
                   </tr>
                 );
               })}
-            </tbody>
+            </tbody>*/}
           </table>
         </div>
       </div>

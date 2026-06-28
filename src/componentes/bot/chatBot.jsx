@@ -1,9 +1,22 @@
 import React, { useState } from "react";
 import { Chatbot, createChatBotMessage } from "react-chatbot-kit";
 import "react-chatbot-kit/build/main.css";
-import productosData from "../../../public/productos.json";
+import productosUrl from "/productos.json?url";
 
-const productos = productosData.productos || [];
+let productos = [];
+
+const cargarProductos = async () => {
+  try {
+    const response = await fetch(productosUrl);
+    const data = await response.json();
+    productos = data.productos || [];
+  } catch (error) {
+    console.error("No se pudieron cargar los productos del chatbot:", error);
+    productos = [];
+  }
+};
+
+void cargarProductos();
 
 const obtenerProductosPorCategoria = (categoria) => {
   const filtro = categoria.toLowerCase();
