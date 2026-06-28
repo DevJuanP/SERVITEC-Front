@@ -25,12 +25,13 @@
 .tabla-citas th,
 .tabla-citas td {
   border: 1px solid #ccc;
-  padding: 8px;
+  padding: 6px 8px;
   text-align: left;
   word-break: break-word;
 }
 
 /* columnas fijas más anchas */
+/* hacer la tabla más compacta: columnas con menos min-width */
 .tabla-citas th:nth-child(2),
 .tabla-citas td:nth-child(2),
 .tabla-citas th:nth-child(3),
@@ -39,10 +40,9 @@
 .tabla-citas td:nth-child(4),
 .tabla-citas th:nth-child(5),
 .tabla-citas td:nth-child(5) {
-  min-width: 140px;
+  min-width: 100px;
 }
 
-/* columnas del reporte (asesor, tipo, fecha, estado, descripcion) más anchas */
 .tabla-citas th:nth-child(6),
 .tabla-citas td:nth-child(6),
 .tabla-citas th:nth-child(7),
@@ -53,7 +53,7 @@
 .tabla-citas td:nth-child(9),
 .tabla-citas th:nth-child(10),
 .tabla-citas td:nth-child(10) {
-  min-width: 160px;
+  min-width: 120px;
 }
 
 .tabla-citas th {
@@ -86,6 +86,20 @@
   vertical-align: middle;
   writing-mode: horizontal-tb !important;
   transform: none !important;
+}
+
+/* acciones en la tabla */
+.tabla-citas .accion-btn {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.tabla-citas .accion-btn.cancel {
+  background: #c0392b;
+  color: #fff;
 }
 
 /* botón de PDF en sección de citas */
