@@ -34,8 +34,6 @@
 /* hacer la tabla más compacta: columnas con menos min-width */
 .tabla-citas th:nth-child(2),
 .tabla-citas td:nth-child(2),
-.tabla-citas th:nth-child(3),
-.tabla-citas td:nth-child(3),
 .tabla-citas th:nth-child(4),
 .tabla-citas td:nth-child(4),
 .tabla-citas th:nth-child(5),
@@ -43,25 +41,34 @@
   min-width: 100px;
 }
 
+/* hacer la columna 'Asesor' más estrecha */
+.tabla-citas th:nth-child(3),
+.tabla-citas td:nth-child(3) {
+  min-width: 90px;
+  max-width: 140px;
+}
+
 .tabla-citas th:nth-child(6),
 .tabla-citas td:nth-child(6),
 .tabla-citas th:nth-child(7),
 .tabla-citas td:nth-child(7),
 .tabla-citas th:nth-child(8),
-.tabla-citas td:nth-child(8),
-.tabla-citas th:nth-child(9),
-.tabla-citas td:nth-child(9),
-.tabla-citas th:nth-child(10),
-.tabla-citas td:nth-child(10) {
+.tabla-citas td:nth-child(8) {
   min-width: 120px;
 }
 
 .tabla-citas th {
-  background-color: #d4c4b8; /* tono claro en cabeceras */
+  background-color: #2b0b0b; /* fondo oscuro rojizo */
+  color: #fff;
+  border-color: rgba(255,255,255,0.08);
 }
 
 .tabla-citas tr:nth-child(even) {
-  background-color: #f9f2ee;
+  background-color: #f7e9e7; /* suave tintado rojizo */
+}
+
+.tabla-citas tr:hover {
+  background-color: #f2d6d5; /* resaltar fila en hover */
 }
 
 /* área del reporte: scroll si la tabla es más ancha que el contenedor */
@@ -163,4 +170,34 @@
 
 .formulario-cc button:hover {
  background-color: #6E1616; 
+}
+
+/* Estilos sencillos para el acordeón de citas */
+.citas-accordion {
+  width: 100%;
+}
+.citas-accordion summary {
+  list-style: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #d0c0b0;
+  background: rgba(0,0,0,0.03);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.citas-accordion summary::-webkit-details-marker {
+  display: none;
+}
+.citas-accordion summary:after {
+  content: '▾';
+  font-size: 16px;
+  transition: transform 0.18s ease;
+}
+details[open] .citas-accordion summary:after,
+details[open] summary:after {
+  transform: rotate(180deg);
+}
+.citas-accordion[open] {
+  padding: 12px 0 0 0;
 }
